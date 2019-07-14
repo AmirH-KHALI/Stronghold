@@ -22,7 +22,7 @@ public class MainMenuButton extends Button {
                     public void handle(MouseEvent event) {
 
                         setBackground(ResourceManager.getBackground(mainImageName + "_HOVER"));
-                        ResourceManager.getSound("GUI-HOVER_BTN").play(1.0);
+                        //ResourceManager.getSound("GUI-HOVER_BTN").play(1.0);
                         GameGui.getInitialScene().setCursor(Cursor.HAND);
 
                     }

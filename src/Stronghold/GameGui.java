@@ -15,18 +15,25 @@ import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 
+import java.util.Scanner;
+
 
 public class GameGui extends Application {
+
+    private Scanner in = new Scanner(System.in);
 
     private Group guiRoot = new Group();
     private static VBox mainBox;
     private static Scene initialScene;
+    private static Stage primaryStage;
 
     @Override
     public void start(Stage primaryStage) {
 
 
         ResourceManager.initialization();
+
+        this.primaryStage = primaryStage;
 
         primaryStage.setAlwaysOnTop(true);
 
@@ -42,9 +49,31 @@ public class GameGui extends Application {
                     @Override
                     public void handle(MouseEvent event) {
 
-                        Game myGame = new Game("sample");
-                        theMenuMusic.stop();
-                        myGame.render(primaryStage);
+                        //Game myGame = new Game("sample");
+
+                        gotoClientPage();
+
+                        //theMenuMusic.stop();
+
+                        //myGame.render(primaryStage);
+
+                    }
+                });
+
+        btnCreateServer.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+
+                        //Game myGame = new Game("sample");
+
+                        gotoServerPage();
+
+                        //Server myServer = new Server("sample", primaryStage);
+
+                        //theMenuMusic.stop();
+
+                        //myGame.render(primaryStage);
 
                     }
                 });
@@ -78,19 +107,19 @@ public class GameGui extends Application {
         mainBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
 
 
-        primaryStage.setFullScreenExitHint("");
-        primaryStage.setFullScreen(true);
-        primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-
-        primaryStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-
-                if(newValue != null)
-                    primaryStage.setFullScreen(true);
-            }
-
-        });
+//        primaryStage.setFullScreenExitHint("");
+//        primaryStage.setFullScreen(true);
+//        primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+//
+//        primaryStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
+//            @Override
+//            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+//
+//                if(newValue != null)
+//                    primaryStage.setFullScreen(true);
+//            }
+//
+//        });
 
 
 //        new AnimationTimer() {
@@ -105,13 +134,13 @@ public class GameGui extends Application {
 
 //        theMenuMusic.play();
 //
-//        primaryStage.show();
+        primaryStage.show();
 
 
 
         // Should Be Removed
-        new Game("sample").render(primaryStage);
-        theMenuMusic.stop();
+//        new Game("sample").render(primaryStage);
+//        theMenuMusic.stop();
 
     }
 
@@ -119,6 +148,20 @@ public class GameGui extends Application {
 
         return initialScene;
 
+    }
+
+    public static void gotoClientPage() {
+
+        Game myGame = new Game("sample");
+
+        myGame.render(primaryStage);
+
+        //mainBox.setVisible(false);
+    }
+
+    public static void gotoServerPage() {
+
+        //mainBox.setVisible(false);
     }
 
     public static void main(String[] args) {

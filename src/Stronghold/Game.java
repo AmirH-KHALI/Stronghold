@@ -91,7 +91,7 @@ public class Game  {
     private final Xform humanXfrom = new Xform();
 
 
-    Game(String mapName) {
+    Game(String mapName){//}, Server server) {
 
         // Should be Commented
         ResourceManager.initialization();
