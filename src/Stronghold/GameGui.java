@@ -1,6 +1,7 @@
 package Stronghold;
 
 import Stronghold.Gui.Buttons.MainMenuButton;
+import Stronghold.Gui.Buttons.MainMenuTextField;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -9,6 +10,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
 import javafx.scene.media.AudioClip;
@@ -24,20 +26,12 @@ public class GameGui extends Application {
 
     private Group guiRoot = new Group();
     private static VBox mainBox;
+    private static VBox serverPageBox;
+    private static VBox clientPageBox;
     private static Scene initialScene;
     private static Stage primaryStage;
 
-    @Override
-    public void start(Stage primaryStage) {
-
-
-        ResourceManager.initialization();
-
-        this.primaryStage = primaryStage;
-
-        primaryStage.setAlwaysOnTop(true);
-
-        AudioClip theMenuMusic = ResourceManager.getSound("GUI-Music");
+    public static void createMainBox () {
 
         MainMenuButton btnCreateServer = new MainMenuButton("GUI-CREATE_SERVER");
         MainMenuButton btnJoin = new MainMenuButton("GUI-JOIN");
@@ -49,13 +43,9 @@ public class GameGui extends Application {
                     @Override
                     public void handle(MouseEvent event) {
 
-                        //Game myGame = new Game("sample");
-
                         gotoClientPage();
 
                         //theMenuMusic.stop();
-
-                        //myGame.render(primaryStage);
 
                     }
                 });
@@ -65,15 +55,9 @@ public class GameGui extends Application {
                     @Override
                     public void handle(MouseEvent event) {
 
-                        //Game myGame = new Game("sample");
-
                         gotoServerPage();
 
-                        //Server myServer = new Server("sample", primaryStage);
-
                         //theMenuMusic.stop();
-
-                        //myGame.render(primaryStage);
 
                     }
                 });
@@ -86,13 +70,98 @@ public class GameGui extends Application {
                     }
                 });
 
-
         VBox mainMenuBtnBox = new VBox(btnCreateServer, btnJoin, btnAbout, btnExit);
         mainMenuBtnBox.setTranslateX(500);
         mainMenuBtnBox.setTranslateY(500);
         mainMenuBtnBox.setSpacing(30);
 
         mainBox = new VBox(mainMenuBtnBox);
+
+    }
+
+    public static void createServerPageBox () {
+
+        MainMenuTextField tfClientName = new MainMenuTextField("Enter Your Name");
+        MainMenuButton btnEnter = new MainMenuButton("GUI-CREATE_SERVER");
+        MainMenuButton btnBack = new MainMenuButton("GUI-BACK");
+
+        btnEnter.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+
+                    }
+                });
+
+        btnBack.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        gotoMainMenuPage();
+                    }
+                });
+
+        VBox mainMenuBtnBox = new VBox(tfClientName, btnEnter, btnBack);
+        mainMenuBtnBox.setTranslateX(500);
+        mainMenuBtnBox.setTranslateY(500);
+        mainMenuBtnBox.setSpacing(30);
+
+        serverPageBox = new VBox(mainMenuBtnBox);
+
+    }
+
+    public static void createClientPageBox () {
+
+        MainMenuTextField tfClientName = new MainMenuTextField("Enter Your Name");
+        MainMenuTextField tfServerAddress = new MainMenuTextField("Enter Server Address");
+        MainMenuButton btnEnter = new MainMenuButton("GUI-JOIN");
+        MainMenuButton btnBack = new MainMenuButton("GUI-BACK");
+
+        btnEnter.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        Game myGame = new Game("sample");
+                        myGame.render(primaryStage);
+                    }
+                });
+
+        btnBack.addEventHandler(MouseEvent.MOUSE_CLICKED,
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        gotoMainMenuPage();
+                    }
+                });
+
+        VBox mainMenuBtnBox = new VBox(tfClientName, tfServerAddress, btnEnter, btnBack);
+        mainMenuBtnBox.setTranslateX(500);
+        mainMenuBtnBox.setTranslateY(500);
+        mainMenuBtnBox.setSpacing(30);
+
+        clientPageBox = new VBox(mainMenuBtnBox);
+
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+
+
+        ResourceManager.initialization();
+
+        this.primaryStage = primaryStage;
+
+        primaryStage.setAlwaysOnTop(true);
+
+        //AudioClip theMenuMusic = ResourceManager.getSound("GUI-Music");
+
+        createMainBox();
+
+        createServerPageBox();
+
+        createClientPageBox();
+
+        //VBox allBoxes = new VBox(mainBox, serverPageBox, clientPageBox);
 
         initialScene = new Scene(mainBox, Stronghold.screenSize.width, Stronghold.screenSize.height);
         initialScene.setCursor(Cursor.DEFAULT);
@@ -105,42 +174,31 @@ public class GameGui extends Application {
         primaryStage.setMinWidth(Stronghold.screenSize.width);
 
         mainBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
+        serverPageBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
+        clientPageBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
 
 
-//        primaryStage.setFullScreenExitHint("");
-//        primaryStage.setFullScreen(true);
-//        primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
-//
-//        primaryStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
-//            @Override
-//            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-//
-//                if(newValue != null)
-//                    primaryStage.setFullScreen(true);
-//            }
-//
-//        });
+        primaryStage.setFullScreenExitHint("");
+        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
+
+        primaryStage.fullScreenProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+
+                if(newValue != null)
+                    primaryStage.setFullScreen(true);
+            }
+
+        });
 
 
-//        new AnimationTimer() {
-//            @Override
-//            public void handle(long now) {
-//
-//                primaryStage.setFullScreen(true);
-//
-//            }
-//        }.start();
 
+        //theMenuMusic.play();
 
-//        theMenuMusic.play();
-//
         primaryStage.show();
 
-
-
-        // Should Be Removed
-//        new Game("sample").render(primaryStage);
-//        theMenuMusic.stop();
+        //theMenuMusic.stop();
 
     }
 
@@ -152,16 +210,23 @@ public class GameGui extends Application {
 
     public static void gotoClientPage() {
 
-        Game myGame = new Game("sample");
+        initialScene.setRoot(clientPageBox);
 
-        myGame.render(primaryStage);
+        //Game myGame = new Game("sample");
+
+        //myGame.render(primaryStage);
 
         //mainBox.setVisible(false);
     }
 
     public static void gotoServerPage() {
 
-        //mainBox.setVisible(false);
+        initialScene.setRoot(serverPageBox);
+    }
+
+    public static void gotoMainMenuPage() {
+
+        initialScene.setRoot(mainBox);
     }
 
     public static void main(String[] args) {

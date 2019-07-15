@@ -1,6 +1,7 @@
 package Stronghold;
 
 import javafx.stage.Stage;
+import org.json.simple.JSONObject;
 
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -15,6 +16,7 @@ public class Server implements Runnable {
         //myGame = new Game(mapName, this);
 
         //myGame.render(stage);
+
 
         try {
             socket = new DatagramSocket(7777);
@@ -55,5 +57,9 @@ public class Server implements Runnable {
     @Override
     public void run () {
 
+    }
+
+    public static void main(String[] args) {
+        new Server("sample");
     }
 }
