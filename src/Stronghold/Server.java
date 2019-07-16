@@ -1,14 +1,22 @@
 package Stronghold;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.io.IOException;
 import java.net.*;
 import java.util.Scanner;
 
 public class Server implements Runnable {
 
-    private Thread sendMapObjectsThread;
     private DatagramSocket socket;
 
+    private Game game;
+
     public Server (String mapName) {
+
+        game = new Game("sample");
 
         try {
             socket = new DatagramSocket(8888);
@@ -19,8 +27,8 @@ public class Server implements Runnable {
         Thread listenThread = new Thread(this);
         listenThread.start();
 
-        sendMapObjectsThread = new Thread(() -> {
-            while (true) {
+        new Thread(() -> {
+            while (!socket.isClosed()) {
                 updateMapObjects();
                 sendMapObjectsToAll();
                 sendResourcesForAll();
@@ -46,6 +54,10 @@ public class Server implements Runnable {
 
     }
 
+    public void stop () {
+        socket.close();
+    }
+
     @Override
     public void run () {
 
@@ -57,10 +69,7 @@ public class Server implements Runnable {
                 byte[] data = incoming.getData();
                 String packet = new String(data, 0, incoming.getLength());
 
-                //do the thing
-
-                System.out.println(packet);
-
+                analyzePacket(packet, incoming.getAddress(), incoming.getPort());
 
                 Thread.sleep(1000 / 20);
             }
@@ -69,11 +78,55 @@ public class Server implements Runnable {
         }
     }
 
-    static Scanner input = new Scanner(System.in);
+    private void analyzePacket(String body, InetAddress address, int port) {
 
-    public static void main(String[] args) {
-        new Server("sample");
-        System.out.println("Enter : ");
-        Client myClient = new Client(input.next(), "localhost");
+        GameEvent gameEvent = GameEvent.parseFromString(body);
+
+        switch (gameEvent.type) {
+            case GameEvent.JOIN_TO_GAME: {
+
+                String username = gameEvent.message;
+
+                //Send previous players for new player
+                for (ServerPlayer player : game.players) {
+                    GameEvent joinGameEvent = new GameEvent(GameEvent.USER_JOINED_TO_NETWORK, player.playerName);
+                    sendPacket(joinGameEvent.getJSON(), address, port);
+                }
+
+                game.players.add(new ServerPlayer(username, address, port));
+
+                //create building
+
+                //Send join alert for all clients
+                GameEvent joinGameEvent = new GameEvent(GameEvent.USER_JOINED_TO_NETWORK, username);
+                sendPacketForAll(joinGameEvent.getJSON());
+                break;
+            }
+        }
     }
+
+    boolean sendPacket(String body, InetAddress address, int port) {
+        DatagramPacket dp = new DatagramPacket(body.getBytes(), body.getBytes().length, address, port);
+        try {
+            socket.send(dp);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    void sendPacketForAll(String body) {
+        for (ServerPlayer player : game.players) {
+            sendPacket(body, player.address, player.port);
+        }
+    }
+
+//    static Scanner input = new Scanner(System.in);
+//
+//    public static void main(String[] args) {
+//        new Server("sample");
+//        System.out.println("Enter : ");
+//        Client myClient = new Client(input.next(), "localhost");
+//    }
 }

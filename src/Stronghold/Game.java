@@ -38,6 +38,10 @@ public class Game  {
     public ArrayList<GameAnimation> gameObjectAnimations = new ArrayList<>();
     public static boolean haveCastle = false;
 
+    //Duck
+
+    public ArrayList<ServerPlayer> players;
+
 
     // Main Objects
 
@@ -92,6 +96,9 @@ public class Game  {
 
 
     Game(String mapName){//}, Server server) {
+
+        //Duck
+        players = new ArrayList<>();
 
         // Should be Commented
         ResourceManager.initialization();

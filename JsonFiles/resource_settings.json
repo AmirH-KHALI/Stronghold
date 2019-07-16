@@ -11,6 +11,8 @@
     "GUI-EXIT_HOVER": "/Assets/img/btn/exit_btnH.jpg",
     "GUI-BACK": "/Assets/img/btn/back_btn.jpg",
     "GUI-BACK_HOVER": "/Assets/img/btn/back_btnH.jpg",
+    "GUI-START": "/Assets/img/btn/start_btn.jpg",
+    "GUI-START_HOVER": "/Assets/img/btn/start_btnH.jpg",
     "GAME-MENU": "/Assets/img/menu.png",
     "TILE-DESERT": "/Assets/img/tile/desert_tile.jpg",
     "TILE-GRASS": "/Assets/img/tile/grass_tile.jpg",
