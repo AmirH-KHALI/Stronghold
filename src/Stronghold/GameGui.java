@@ -89,7 +89,8 @@ public class GameGui extends Application {
                 new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
-
+                        Server myServer = new Server("sample");
+                        Client myClient = new Client(tfClientName.getText(), "localhost");
                     }
                 });
 
@@ -160,8 +161,6 @@ public class GameGui extends Application {
         createServerPageBox();
 
         createClientPageBox();
-
-        //VBox allBoxes = new VBox(mainBox, serverPageBox, clientPageBox);
 
         initialScene = new Scene(mainBox, Stronghold.screenSize.width, Stronghold.screenSize.height);
         initialScene.setCursor(Cursor.DEFAULT);

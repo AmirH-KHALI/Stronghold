@@ -1,43 +1,35 @@
 package Stronghold;
 
-import javafx.stage.Stage;
-import org.json.simple.JSONObject;
-
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.*;
+import java.util.Scanner;
 
 public class Server implements Runnable {
-    private Thread sendToAll;
+
+    private Thread sendMapObjectsThread;
     private DatagramSocket socket;
-    private Game myGame;
 
     public Server (String mapName) {
 
-        //myGame = new Game(mapName, this);
-
-        //myGame.render(stage);
-
-
         try {
-            socket = new DatagramSocket(7777);
+            socket = new DatagramSocket(8888);
         } catch (SocketException e) {
-            //System.out.println("socket not created!");
+            e.printStackTrace();
         }
 
-        Thread listenTread = new Thread(this);
-        listenTread.start();
+        Thread listenThread = new Thread(this);
+        listenThread.start();
 
-        sendToAll = new Thread(() -> {
-           while (true) {
-               updateMapObjects();
-               sendMapObjectsToAll();
-               sendResourcesForAll();
-               try {
-                   Thread.sleep(1000 / 4);
-               } catch (InterruptedException e) {
-                   //System.out.println("!!");
-               }
-           }
+        sendMapObjectsThread = new Thread(() -> {
+            while (true) {
+                updateMapObjects();
+                sendMapObjectsToAll();
+                sendResourcesForAll();
+                try {
+                    Thread.sleep(1000 / 4);
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();
+                }
+            }
         });
 
     }
@@ -57,9 +49,31 @@ public class Server implements Runnable {
     @Override
     public void run () {
 
+        try {
+            byte[] buffer = new byte[65536];
+            DatagramPacket incoming = new DatagramPacket(buffer, buffer.length);
+            while (true) {
+                socket.receive(incoming);
+                byte[] data = incoming.getData();
+                String packet = new String(data, 0, incoming.getLength());
+
+                //do the thing
+
+                System.out.println(packet);
+
+
+                Thread.sleep(1000 / 20);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+    static Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) {
         new Server("sample");
+        System.out.println("Enter : ");
+        Client myClient = new Client(input.next(), "localhost");
     }
 }
