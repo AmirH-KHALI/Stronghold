@@ -1,6 +1,10 @@
 package Stronghold;
 
 
+import Stronghold.GameObjects.GameAnimation;
+import Stronghold.Map.GameMap;
+import javafx.animation.AnimationTimer;
+import javafx.stage.Stage;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -22,26 +26,33 @@ public class Client implements Runnable {
 
     private String usrName;
 
-    public Client (String usrName, String serverIP) {
+    private Game game;
+    private Stage stage;
+
+    public Client (String usrName, String serverIP, Stage stage) {
 
         events = new ArrayList<>();
-
         this.usrName = usrName;
+        this.stage = stage;
 
+        //initial socket
         try {
             socket = new DatagramSocket();
         } catch (SocketException e) {
             e.printStackTrace();
         }
 
+        //convert server address
         try {
             serverAddress = InetAddress.getByName(serverIP);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
 
+        //client start
         new Thread(this).start();
 
+        //handle event thread
         new Thread(() -> {
             while (true) {
                 if (hasNewEvent()) {
@@ -64,15 +75,17 @@ public class Client implements Runnable {
         return ge;
     }
 
-    public void stop () { socket.close(); }
-
     @Override
     public void run () {
-
         try {
+
+            //initial buffer
             byte[] buffer = new byte[65536];
             DatagramPacket incoming = new DatagramPacket(buffer, buffer.length);
+
             while (true) {
+
+                //receive data and cast to String
                 socket.receive(incoming);
                 byte[] data = incoming.getData();
                 String packet = new String(data, 0, incoming.getLength());
@@ -88,13 +101,14 @@ public class Client implements Runnable {
 
     public void sendPacket(String body, InetAddress address, int port) {
 
+        //convert JSON to datagram packet
         DatagramPacket dp = new DatagramPacket(body.getBytes(), body.getBytes().length, address, port);
 
+        //send packet
         try {
-            //System.out.println("hi");
             socket.send(dp);
         } catch (IOException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -105,28 +119,38 @@ public class Client implements Runnable {
                 GameGui.addUserToUsersList(username);
                 break;
             }
+            case GameEvent.START_GAME: {
+
+                new AnimationTimer() {
+
+                    @Override
+                    public void handle(long now) {
+                        game = new Game(gameEvent.message);
+                        try {
+                            game.render(stage);
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }.start();
+                break;
+            }
         }
     }
 
-    public void addToUsersList () {
+    public void sendGameEvent (int type, String message) {
+
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("type", GameEvent.JOIN_TO_GAME);
-        jsonObject.put("message", this.usrName);
+        jsonObject.put("type", type);
+        jsonObject.put("message", message);
         sendPacket(jsonObject.toJSONString(), serverAddress, 8888);
 
     }
 
+    public String getUsrName () {
+        return usrName;
+    }
 
-//    static Scanner input = new Scanner(System.in);
-//
-//    public static void main(String[] args) {
-//        System.out.println("Enter : ");
-//        Client myClient = new Client(input.next(), "localhost");
-//        try {
-//            System.out.println("Enter : ");
-//            myClient.sendPacket(input.next(), InetAddress.getByName("localhost"), 8888);
-//        } catch (Exception e) {
-//
-//        }
-//    }
 }

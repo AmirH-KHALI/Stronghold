@@ -27,11 +27,11 @@ public class GameGui extends Application {
 
     private Scanner in = new Scanner(System.in);
 
-    private Group guiRoot = new Group();
     private static VBox mainBox;
     private static VBox serverPageBox;
     private static VBox clientPageBox;
     private static VBox usersListViewPageBox;
+
     private static Scene initialScene;
     private static Stage primaryStage;
 
@@ -45,11 +45,15 @@ public class GameGui extends Application {
 
     public static void createMainBox () {
 
+
+        //create buttons
         MainMenuButton btnCreateServer = new MainMenuButton("GUI-CREATE_SERVER");
         MainMenuButton btnJoin = new MainMenuButton("GUI-JOIN");
         MainMenuButton btnAbout = new MainMenuButton("GUI-ABOUT");
         MainMenuButton btnExit = new MainMenuButton("GUI-EXIT");
 
+
+        //how buttons works
         btnJoin.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override
@@ -82,6 +86,8 @@ public class GameGui extends Application {
                     }
                 });
 
+
+        //add buttons to VBox
         VBox mainMenuBtnBox = new VBox(btnCreateServer, btnJoin, btnAbout, btnExit);
         mainMenuBtnBox.setTranslateX(500);
         mainMenuBtnBox.setTranslateY(500);
@@ -93,19 +99,22 @@ public class GameGui extends Application {
 
     public static void createServerPageBox () {
 
+        //create buttons
         MainMenuTextField tfClientName = new MainMenuTextField("Enter Your Name");
         MainMenuButton btnEnter = new MainMenuButton("GUI-CREATE_SERVER");
         MainMenuButton btnBack = new MainMenuButton("GUI-BACK");
 
+        //how buttons works
         btnEnter.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
 
-                        myServer = new Server("sample");
-                        myClient = new Client(tfClientName.getText(), "localhost");
+                        myServer = new Server("MAP-SAMPLE");
 
-                        myClient.addToUsersList();
+                        myClient = new Client(tfClientName.getText(), "localhost", primaryStage);
+
+                        myClient.sendGameEvent(GameEvent.JOIN_TO_GAME, myClient.getUsrName());
 
                         gotoUsersListViewPage(true);
                     }
@@ -119,6 +128,7 @@ public class GameGui extends Application {
                     }
                 });
 
+        //add buttons to VBox
         VBox mainMenuBtnBox = new VBox(tfClientName, btnEnter, btnBack);
         mainMenuBtnBox.setTranslateX(500);
         mainMenuBtnBox.setTranslateY(500);
@@ -130,19 +140,21 @@ public class GameGui extends Application {
 
     public static void createClientPageBox () {
 
+        //create buttons
         MainMenuTextField tfClientName = new MainMenuTextField("Enter Your Name");
         MainMenuTextField tfServerAddress = new MainMenuTextField("Enter Server Address");
         MainMenuButton btnEnter = new MainMenuButton("GUI-JOIN");
         MainMenuButton btnBack = new MainMenuButton("GUI-BACK");
 
+        //how buttons works
         btnEnter.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
 
-                        myClient = new Client(tfClientName.getText(), tfServerAddress.getText());
+                        myClient = new Client(tfClientName.getText(), tfServerAddress.getText(), primaryStage);
 
-                        myClient.addToUsersList();
+                        myClient.sendGameEvent(GameEvent.JOIN_TO_GAME, myClient.getUsrName());
 
                         gotoUsersListViewPage(false);
                     }
@@ -156,6 +168,7 @@ public class GameGui extends Application {
                     }
                 });
 
+        //add buttons to VBox
         VBox mainMenuBtnBox = new VBox(tfClientName, tfServerAddress, btnEnter, btnBack);
         mainMenuBtnBox.setTranslateX(500);
         mainMenuBtnBox.setTranslateY(500);
@@ -167,38 +180,29 @@ public class GameGui extends Application {
 
     public static void createUsersListViewPageBox () {
 
+        //create buttons
         btnStart = new MainMenuButton("GUI-START");
-        MainMenuButton btnBack = new MainMenuButton("GUI-BACK");
 
+        //initial userListView
         usersListView = new ListView<>();
-
         usersListView.setMaxHeight(136);
         usersListView.setMinHeight(136);
         usersListView.setMaxWidth(361);
         usersListView.setMinWidth(361);
 
+        //how buttons works
         btnStart.addEventHandler(MouseEvent.MOUSE_CLICKED,
                 new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
-                        Game myGame = new Game("sample");
-                        myGame.render(primaryStage);
+
+                        myServer.startGame();
                     }
                 });
 
-        btnBack.addEventHandler(MouseEvent.MOUSE_CLICKED,
-                new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent event) {
-                        players = new ArrayList<>();
-                        usersListView = new ListView<>();
-                        gotoMainMenuPage();
-                        myClient.stop();
-                        myServer.stop();
-                    }
-                });
 
-        VBox mainMenuBtnBox = new VBox(usersListView, btnStart, btnBack);
+        //add buttons to VBox
+        VBox mainMenuBtnBox = new VBox(usersListView, btnStart);
         mainMenuBtnBox.setTranslateX(500);
         mainMenuBtnBox.setTranslateY(500);
         mainMenuBtnBox.setSpacing(30);
@@ -208,7 +212,7 @@ public class GameGui extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws InterruptedException {
 
 
         ResourceManager.initialization();
@@ -239,6 +243,7 @@ public class GameGui extends Application {
         primaryStage.setMinHeight(Stronghold.screenSize.height);
         primaryStage.setMinWidth(Stronghold.screenSize.width);
 
+        //set Background
         mainBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
         serverPageBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
         clientPageBox.setBackground(ResourceManager.getBackground("GUI-BACKGROUND"));
@@ -258,8 +263,6 @@ public class GameGui extends Application {
             }
 
         });
-
-
 
         //theMenuMusic.play();
 
@@ -299,15 +302,11 @@ public class GameGui extends Application {
     }
 
     public static void addUserToUsersList (String name) {
+
         players.add(name);
-        System.out.println(players);
+        //System.out.println(players);
         usersListView.setItems(FXCollections.observableList(players));
     }
 
-    public static void main(String[] args) {
-
-        launch(args);
-
-    }
-
+    public static void main(String[] args) { launch(args); }
 }

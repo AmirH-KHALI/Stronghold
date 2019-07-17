@@ -40,7 +40,7 @@ public class Game  {
 
     //Duck
 
-    public ArrayList<ServerPlayer> players;
+    public static ArrayList<ServerPlayer> players = new ArrayList<>();
 
 
     // Main Objects
@@ -98,7 +98,7 @@ public class Game  {
     Game(String mapName){//}, Server server) {
 
         //Duck
-        players = new ArrayList<>();
+        //players = new ArrayList<>();
 
         // Should be Commented
         ResourceManager.initialization();
@@ -644,6 +644,11 @@ public class Game  {
 
         });
 
+    }
+
+    //Duck
+    public String mapID () {
+        return gameMap.mapID();
     }
 
 }

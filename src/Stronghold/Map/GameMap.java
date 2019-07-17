@@ -80,4 +80,10 @@ public class GameMap {
     }
 
 
+    //Duck
+    public String mapID () {
+        return mapName;
+    }
+
+
 }

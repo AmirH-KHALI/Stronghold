@@ -12,21 +12,25 @@ public class Server implements Runnable {
 
     private DatagramSocket socket;
 
-    private Game game;
+    //private Game game;
+
+    private final int port = 8888;
 
     public Server (String mapName) {
 
-        game = new Game("sample");
+        //game = new Game(mapName);
 
+        //initial socket
         try {
-            socket = new DatagramSocket(8888);
+            socket = new DatagramSocket(port);
         } catch (SocketException e) {
             e.printStackTrace();
         }
 
-        Thread listenThread = new Thread(this);
-        listenThread.start();
+        //server start
+        new Thread(this).start();
 
+        //game update thread
         new Thread(() -> {
             while (!socket.isClosed()) {
                 updateMapObjects();
@@ -35,14 +39,15 @@ public class Server implements Runnable {
                 try {
                     Thread.sleep(1000 / 4);
                 } catch (InterruptedException e) {
-                    //e.printStackTrace();
+                    e.printStackTrace();
                 }
             }
         });
 
     }
 
-    public void updateMapObjects() {
+
+    public void updateMapObjects () {
 
     }
 
@@ -54,25 +59,26 @@ public class Server implements Runnable {
 
     }
 
-    public void stop () {
-        socket.close();
-    }
-
     @Override
     public void run () {
-
         try {
+
+            //initial buffer
             byte[] buffer = new byte[65536];
             DatagramPacket incoming = new DatagramPacket(buffer, buffer.length);
+
             while (true) {
+
+                //receive data and cast to String
                 socket.receive(incoming);
                 byte[] data = incoming.getData();
                 String packet = new String(data, 0, incoming.getLength());
 
                 analyzePacket(packet, incoming.getAddress(), incoming.getPort());
 
-                Thread.sleep(1000 / 20);
+                Thread.sleep(50);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -88,12 +94,12 @@ public class Server implements Runnable {
                 String username = gameEvent.message;
 
                 //Send previous players for new player
-                for (ServerPlayer player : game.players) {
+                for (ServerPlayer player : Game.players) {
                     GameEvent joinGameEvent = new GameEvent(GameEvent.USER_JOINED_TO_NETWORK, player.playerName);
                     sendPacket(joinGameEvent.getJSON(), address, port);
                 }
 
-                game.players.add(new ServerPlayer(username, address, port));
+                Game.players.add(new ServerPlayer(username, address, port));
 
                 //create building
 
@@ -105,8 +111,12 @@ public class Server implements Runnable {
         }
     }
 
-    boolean sendPacket(String body, InetAddress address, int port) {
+    public boolean sendPacket(String body, InetAddress address, int port) {
+
+        //convert JSON to datagram packet
         DatagramPacket dp = new DatagramPacket(body.getBytes(), body.getBytes().length, address, port);
+
+        //send packet
         try {
             socket.send(dp);
             return true;
@@ -116,17 +126,21 @@ public class Server implements Runnable {
         }
     }
 
-    void sendPacketForAll(String body) {
-        for (ServerPlayer player : game.players) {
+    public void sendPacketForAll(String body) {
+
+        for (ServerPlayer player : Game.players) {
             sendPacket(body, player.address, player.port);
         }
+
     }
 
-//    static Scanner input = new Scanner(System.in);
-//
-//    public static void main(String[] args) {
-//        new Server("sample");
-//        System.out.println("Enter : ");
-//        Client myClient = new Client(input.next(), "localhost");
-//    }
+    public void startGame () {
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", GameEvent.START_GAME);
+        jsonObject.put("message", "sample");
+
+        sendPacketForAll(jsonObject.toJSONString());
+    }
+
 }
