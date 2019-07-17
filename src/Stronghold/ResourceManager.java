@@ -62,12 +62,12 @@ public class ResourceManager{
 
             // Sounds
 
-            RESOURCES  = (Map) jsonObject.get("sounds");
-            for (Object key : RESOURCES.keySet()) {
-
-                SOUNDS.put( (String) key, new AudioClip(new File(ResourceManager.gameAddress + RESOURCES.get(key)).toURI().toString()) );
-
-            }
+//            RESOURCES  = (Map) jsonObject.get("sounds");
+//            for (Object key : RESOURCES.keySet()) {
+//
+//                SOUNDS.put( (String) key, new AudioClip(new File(ResourceManager.gameAddress + RESOURCES.get(key)).toURI().toString()) );
+//
+//            }
 
             // Jsons
 
@@ -132,6 +132,4 @@ public class ResourceManager{
         return SOUNDS.get(name);
 
     }
-
-
 }

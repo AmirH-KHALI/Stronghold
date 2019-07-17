@@ -3,7 +3,6 @@ package Stronghold.GameObjects.Animation;
 import Stronghold.Game;
 import Stronghold.ResourceManager;
 import Stronghold.Xform;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.json.simple.JSONArray;
 
 import java.util.Map;

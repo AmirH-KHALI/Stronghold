@@ -3,7 +3,9 @@ package Stronghold.Map;
 import java.util.Map;
 
 import Stronghold.Game;
+
 import Stronghold.GameController;
+
 import Stronghold.Map.Tile.*;
 import Stronghold.ResourceManager;
 import javafx.event.EventHandler;
@@ -18,7 +20,7 @@ public class GameMap {
 
     public GameMap(String mapName) {
 
-
+        this.mapName = mapName;
 
         Map mapJsonFile = ResourceManager.getJson(mapName);
 
@@ -49,7 +51,6 @@ public class GameMap {
             2 GRASS
             3 SEA
             4 Gulf
-
          */
 
         for (int i = -halfI; i < halfI; i++) for (int j = -halfJ; j < halfJ; j++){
@@ -73,7 +74,6 @@ public class GameMap {
 
             }
 
-
             ((gameBoard[i+halfI][j+halfJ])).xform.addEventHandler(MouseEvent.ANY, new GameController("EARTH",gameBoard[i+halfI][j+halfJ]));
 
         }
@@ -92,6 +92,12 @@ public class GameMap {
 //        }
 
 
+    }
+
+
+    //Duck
+    public String mapID () {
+        return mapName;
     }
 
 

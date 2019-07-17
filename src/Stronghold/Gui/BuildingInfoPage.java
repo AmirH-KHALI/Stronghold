@@ -1,7 +1,7 @@
 package Stronghold.Gui;
 
 import Stronghold.Game;
-import com.sun.org.apache.bcel.internal.generic.BREAKPOINT;
+
 import javafx.scene.Group;
 
 public class BuildingInfoPage extends Group {

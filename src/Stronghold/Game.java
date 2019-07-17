@@ -3,8 +3,10 @@ package Stronghold;
 import Stronghold.GameObjects.Building.*;
 import Stronghold.GameObjects.Animation.GameAnimation;
 import Stronghold.GameObjects.Human.*;
+
 import Stronghold.GameObjects.Animation.NaturalObject.*;
 import Stronghold.GameObjects.Animation.NaturalObject.ArcherAnim;
+
 import Stronghold.Gui.GameMenu;
 import Stronghold.Map.GameMap;
 
@@ -19,6 +21,7 @@ import javafx.scene.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -27,6 +30,7 @@ import javafx.stage.Stage;
 
 public class Game  {
 
+    private static String mapName;
 
     public static Map resources;
     private Map resourceRate;
@@ -37,6 +41,10 @@ public class Game  {
     public ArrayList<GameAnimation> gameObjectAnimations = new ArrayList<>();
     public static boolean haveCastle = false;
     public static GameMenu gameMenu;
+
+    //Duck
+
+    public static ArrayList<ServerPlayer> players = new ArrayList<>();
 
 
     // Main Objects
@@ -56,14 +64,16 @@ public class Game  {
 
     private static double CAMERA_INITIAL_DISTANCE = -2000;
     private static final double CAMERA_INITIAL_X_ANGLE = 55;
-    //    private static final double CAMERA_INITIAL_X_ANGLE = 55;
+
+//    private static final double CAMERA_INITIAL_X_ANGLE = 55;
+
     private static final double CAMERA_INITIAL_Y_ANGLE = 180;
     private static final double CAMERA_NEAR_CLIP = 0.5;
     private static final double CAMERA_FAR_CLIP = 10000.0;
 
     // Mouse
 
-    //    private static final double CONTROL_MULTIPLIER = 0.1;
+//    private static final double CONTROL_MULTIPLIER = 0.1;
 //    private static final double SHIFT_MULTIPLIER = 10.0;
 //    private static final double ROTATION_SPEED = 2.0;
     private static final double MOUSE_SPEED = 2;
@@ -92,7 +102,6 @@ public class Game  {
 
     // Mouse Position on Earth
     public static double[] mousePosOnEarth;
-
 
     Game(String mapName) {
 
@@ -145,8 +154,8 @@ public class Game  {
     public void render(Stage primaryStage) {
 
         // GAME MUSIC
-        
-        startMusic();
+
+        //startMusic();
 
 
         // Game Scene
@@ -202,10 +211,15 @@ public class Game  {
         // Scene Setting and Stage
 
         primaryStage.setTitle("Game");
+
         primaryStage.setScene(gameMenuScene);
         primaryStage.setFullScreen(true);
         primaryStage.show();
 
+
+        primaryStage.setScene(gameMenuScene);
+        primaryStage.setFullScreen(true);
+        primaryStage.show();
 
         // Initial Builds
 
@@ -222,7 +236,7 @@ public class Game  {
 
         // Human
 
-        double specificAngle = (Math.PI*2)/10;
+        double specificAngle = (Math.PI * 2) / 10;
         for (int i = 10; i > -1; i--) {
 
             addHuman("VASSAL-DOWN", (int) (-550 + 50 * Math.cos(specificAngle * i)), (int) (100 + 50 * Math.sin(specificAngle * i)));
@@ -252,13 +266,18 @@ public class Game  {
 
         // Animation
 
+        /*
+         Testing Objects And Animations
+          */
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
 
-                addAnimation("SWORDSMAN-RIGHT", 400 + 35*i, 300 + 35*j);
-                addAnimation("ARCHER-RIGHT", 1000 + 35*i, 600 + 35*j);
+                addAnimation("SWORDSMAN-RIGHT", 400 + 35 * i, 300 + 35 * j);
+                addAnimation("ARCHER-RIGHT", 1000 + 35 * i, 600 + 35 * j);
 
+
+                addHuman("VASSAL-DOWN", (int) (-550 + 50 * Math.cos(specificAngle * i)), (int) (100 + 50 * Math.sin(specificAngle * i)));
 
             }
         }
@@ -266,8 +285,8 @@ public class Game  {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
 
-                addAnimation("SWORDSMAN-LEFT", 400 + 35*i, 300 + 35*j);
-                addAnimation("ARCHER-LEFT", 1000 + 35*i, 600 + 35*j);
+                addAnimation("SWORDSMAN-LEFT", 400 + 35 * i, 300 + 35 * j);
+                addAnimation("ARCHER-LEFT", 1000 + 35 * i, 600 + 35 * j);
 
             }
         }
@@ -275,8 +294,8 @@ public class Game  {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
 
-                addAnimation("SWORDSMAN-UP", 400 + 35*i, 300 + 35*j);
-                addAnimation("ARCHER-UP", 1000 + 35*i, 600 + 35*j);
+                addAnimation("SWORDSMAN-UP", 400 + 35 * i, 300 + 35 * j);
+                addAnimation("ARCHER-UP", 1000 + 35 * i, 600 + 35 * j);
 
             }
         }
@@ -284,33 +303,33 @@ public class Game  {
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
 
-                addAnimation("SWORDSMAN-DOWN", 400 + 35*i, 300 + 35*j);
-                addAnimation("ARCHER-DOWN", 1000 + 35*i, 600 + 35*j);
+                addAnimation("SWORDSMAN-DOWN", 400 + 35 * i, 300 + 35 * j);
+                addAnimation("ARCHER-DOWN", 1000 + 35 * i, 600 + 35 * j);
 
             }
         }
 
 
-        addAnimation("TREE-CHESTNUT", 300,200);
-        addAnimation("TREE-CHESTNUT", 1000,250);
-        addAnimation("TREE-CHESTNUT", 1500,1200);
-        addAnimation("TREE-CHESTNUT", 300,200);
-        addAnimation("TREE-CHESTNUT", -1650,400);
-        addAnimation("TREE-CHESTNUT", -1150,900);
-        addAnimation("TREE-CHESTNUT", 490,75);
-        addAnimation("TREE-CHESTNUT", -450,0);
-        addAnimation("TREE-CHESTNUT", -900,651);
-        addAnimation("TREE-CHESTNUT", -1050,-350);
-        addAnimation("TREE-OAK",500, 500);
-        addAnimation("TREE-OAK",1400, 500);
-        addAnimation("TREE-OAK",-900, -1300);
-        addAnimation("TREE-OAK",1200, -1200);
-        addAnimation("TREE-OAK",-1450, 1225);
-        addAnimation("TREE-PINE",-500, -1000);
-        addAnimation("TREE-PINE",1060, -800);
-        addAnimation("TREE-PINE",1060, -800);
-        addAnimation("TREE-PINE",1010, -650);
-        addAnimation("TREE-PINE",600, 400);
+        addAnimation("TREE-CHESTNUT", 300, 200);
+        addAnimation("TREE-CHESTNUT", 1000, 250);
+        addAnimation("TREE-CHESTNUT", 1500, 1200);
+        addAnimation("TREE-CHESTNUT", 300, 200);
+        addAnimation("TREE-CHESTNUT", -1650, 400);
+        addAnimation("TREE-CHESTNUT", -1150, 900);
+        addAnimation("TREE-CHESTNUT", 490, 75);
+        addAnimation("TREE-CHESTNUT", -450, 0);
+        addAnimation("TREE-CHESTNUT", -900, 651);
+        addAnimation("TREE-CHESTNUT", -1050, -350);
+        addAnimation("TREE-OAK", 500, 500);
+        addAnimation("TREE-OAK", 1400, 500);
+        addAnimation("TREE-OAK", -900, -1300);
+        addAnimation("TREE-OAK", 1200, -1200);
+        addAnimation("TREE-OAK", -1450, 1225);
+        addAnimation("TREE-PINE", -500, -1000);
+        addAnimation("TREE-PINE", 1060, -800);
+        addAnimation("TREE-PINE", 1060, -800);
+        addAnimation("TREE-PINE", 1010, -650);
+        addAnimation("TREE-PINE", 600, 400);
 
 
         startObjectAnimation();
@@ -325,9 +344,6 @@ public class Game  {
         System.out.println(myBuildings);
 
     }
-
-
-    // Builds
 
 
     private void buildCamera() {
@@ -411,7 +427,6 @@ public class Game  {
 
     }
 
-
     public void buildBuilding(String buildingName, int x, int y) {
 
         switch (buildingName) {
@@ -435,6 +450,7 @@ public class Game  {
                 break;
             case "FARM":
                 Farm newFarm = new Farm(new int[]{x, y}, "Amin");
+
                 newFarm.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
                     gameMenu.changeMode(GameMenu.MODES.FARM);
@@ -481,6 +497,7 @@ public class Game  {
                 if (myBuildings.get("BARRACKS") == null) {
 
                     Barracks newBarracks = new Barracks(new int[]{x, y}, "Amin");
+
                     newBarracks.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
                         gameMenu.changeMode(GameMenu.MODES.BARRACKS);
@@ -567,7 +584,6 @@ public class Game  {
 
 
     public void addAnimation(String animationName, int x, int y) {
-
 
         ArcherAnim newArcherAnim;
 
@@ -706,6 +722,7 @@ public class Game  {
                         e.printStackTrace();
                     }
 
+
                     // Calculate Resource Rate
 
 
@@ -749,6 +766,7 @@ public class Game  {
             }
         }.start();
 
+
     }
 
     // Mouse Handler
@@ -757,7 +775,6 @@ public class Game  {
     private void handleMouse(Scene scene, final Node root) {
 
         /*
-
             drag-left:
                 screen
             drag-right:
@@ -768,7 +785,6 @@ public class Game  {
                 construct building
                 attack
                 move
-
          */
 
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
@@ -783,6 +799,7 @@ public class Game  {
 
         });
 
+        // Moving Page
 
         // Moving Page
 
@@ -823,7 +840,6 @@ public class Game  {
 
         });
 
-
         // Add Building
 
         scene.addEventFilter(MouseEvent.ANY, new EventHandler<MouseEvent>() {
@@ -855,6 +871,7 @@ public class Game  {
 
 
                 if (GameController.buildingBarracksIsSelected) {
+
 
                     double xPos = event.getX()*1.25-1600;
                     double yPos = 1000;
