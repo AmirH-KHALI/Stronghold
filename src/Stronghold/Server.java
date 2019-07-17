@@ -13,12 +13,15 @@ public class Server implements Runnable {
     private DatagramSocket socket;
 
     //private Game game;
+    private String mapName;
 
     private final int port = 8888;
 
     public Server (String mapName) {
 
         //game = new Game(mapName);
+
+        this.mapName = mapName;
 
         //initial socket
         try {
@@ -138,7 +141,7 @@ public class Server implements Runnable {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", GameEvent.START_GAME);
-        jsonObject.put("message", "sample");
+        jsonObject.put("message", mapName);
 
         sendPacketForAll(jsonObject.toJSONString());
     }

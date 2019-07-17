@@ -133,11 +133,4 @@ public class ResourceManager{
 
     }
 
-
-    public static void main(String[] args) {
-
-        ResourceManager amin = new ResourceManager();
-
-    }
-
 }

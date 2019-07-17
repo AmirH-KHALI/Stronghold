@@ -2,10 +2,14 @@ package Stronghold.Map;
 
 import java.util.Map;
 
-import Stronghold.Map.Tile.DesertTile;
-import Stronghold.Map.Tile.GrassTile;
-import Stronghold.Map.Tile.Tile;
+import Stronghold.Game;
+
+import Stronghold.GameController;
+
+import Stronghold.Map.Tile.*;
 import Stronghold.ResourceManager;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 import org.json.simple.JSONArray;
 
 public class GameMap {
@@ -16,7 +20,7 @@ public class GameMap {
 
     public GameMap(String mapName) {
 
-
+        this.mapName = mapName;
 
         Map mapJsonFile = ResourceManager.getJson(mapName);
 
@@ -26,6 +30,8 @@ public class GameMap {
                 Integer.parseInt(boardSizeStr.get(0).toString()),
                 Integer.parseInt(boardSizeStr.get(1).toString()),
         };
+
+        int tileSize = Integer.parseInt(mapJsonFile.get("tile_size").toString());
 
         JSONArray boardArrStr = (JSONArray) mapJsonFile.get("board");
         int[][] boardArr = new int[boardSize[0]][boardSize[1]];
@@ -43,8 +49,8 @@ public class GameMap {
 
             1 DESERT
             2 GRASS
-
-
+            3 SEA
+            4 Gulf
          */
 
         for (int i = -halfI; i < halfI; i++) for (int j = -halfJ; j < halfJ; j++){
@@ -52,14 +58,23 @@ public class GameMap {
             switch (boardArr[i+halfI][j+halfJ]) {
 
                 case 1:
-                    gameBoard[i+halfI][j+halfJ] = new DesertTile(new int[] {350*i+175, 350*j+175});
+                    gameBoard[i+halfI][j+halfJ] = new DesertTile(new int[] {tileSize*i+tileSize/2, tileSize*j+tileSize/2});
                     break;
                 case 2:
-                    gameBoard[i+halfI][j+halfJ] = new GrassTile(new int[] {350*i+175, 350*j+175});
+                    gameBoard[i+halfI][j+halfJ] = new GrassTile(new int[] {tileSize*i+tileSize/2, tileSize*j+tileSize/2});
+                    break;
+                case 3:
+                   gameBoard[i+halfI][j+halfJ] = new SeaTile(new int[] {tileSize*i+tileSize/2, tileSize*j+tileSize/2});
+                   break;
+               case 4:
+                   gameBoard[i+halfI][j+halfJ] = new GulfTile(new int[] {tileSize*i+tileSize/2, tileSize*j+tileSize/2});
+                   break;
                 default:
                     break;
 
             }
+
+            ((gameBoard[i+halfI][j+halfJ])).xform.addEventHandler(MouseEvent.ANY, new GameController("EARTH",gameBoard[i+halfI][j+halfJ]));
 
         }
 

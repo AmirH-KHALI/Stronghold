@@ -3,13 +3,13 @@ package Stronghold;
 import Stronghold.GameObjects.Building.*;
 import Stronghold.GameObjects.GameAnimation;
 import Stronghold.GameObjects.Human.*;
-import Stronghold.GameObjects.NaturalObject.Chestnut;
+import Stronghold.GameObjects.NaturalObject.*;
+import Stronghold.Gui.GameMenu;
 import Stronghold.Map.GameMap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
 
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
@@ -18,6 +18,7 @@ import javafx.scene.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -29,7 +30,7 @@ public class Game  {
 
     private static String mapName;
 
-    private Map resources;
+    public static Map resources;
     private Map resourceRate;
     public GameMap gameMap;
     public HashMap<String, ArrayList<Building>> myBuildings;
@@ -37,6 +38,7 @@ public class Game  {
     public ArrayList<Human> noneSoldjers;
     public ArrayList<GameAnimation> gameObjectAnimations = new ArrayList<>();
     public static boolean haveCastle = false;
+    public static GameMenu gameMenu;
 
     //Duck
 
@@ -46,7 +48,7 @@ public class Game  {
     // Main Objects
 
     final private Group root = new Group();
-    final private Xform world = new Xform();
+    final public static Xform world = new Xform();
 
 
     // Camera
@@ -60,13 +62,14 @@ public class Game  {
 
     private static double CAMERA_INITIAL_DISTANCE = -2000;
     private static final double CAMERA_INITIAL_X_ANGLE = 55;
+
 //    private static final double CAMERA_INITIAL_X_ANGLE = 55;
-    private static final double CAMERA_INITIAL_Y_ANGLE = 135;
+    private static final double CAMERA_INITIAL_Y_ANGLE = 180;
     private static final double CAMERA_NEAR_CLIP = 0.5;
     private static final double CAMERA_FAR_CLIP = 10000.0;
 
-
     // Mouse
+
 
 //    private static final double CONTROL_MULTIPLIER = 0.1;
 //    private static final double SHIFT_MULTIPLIER = 10.0;
@@ -95,16 +98,20 @@ public class Game  {
     private final Xform humanXfrom = new Xform();
 
 
-    Game(String mapName){//}, Server server) {
+    // Mouse Position on Earth
+    public static double[] mousePosOnEarth;
 
-        //Duck
-        //players = new ArrayList<>();
 
-        // Should be Commented
+    Game(String mapName){
+
+        // File Manager
+
         ResourceManager.initialization();
-        gameMap = new GameMap("MAP-SAMPLE");
 
 
+        // Map and First Resources
+
+        gameMap = new GameMap(mapName);
 
         Map jsonMap = ResourceManager.getJson("JSON-GAME");
 
@@ -112,24 +119,16 @@ public class Game  {
         resourceRate = (Map) jsonMap.get("initial_resource_rate");
 
 
+        // Initial Building List
+
         myBuildings = new HashMap<>();
         myBuildings.put("CASTLE", null);
         myBuildings.put("FARM", null);
         myBuildings.put("BARRACKS", null);
         myBuildings.put("WORKSHOP", null);
 
-//        addBuilding("CASTLE", -500, 0);
-//
-//        addHuman("VASSAL-DOWN", -300, 0);
-//        addHuman("SWORDSMAN-DOWN", 600, 600);
-//        addHuman("SWORDSMAN-DOWN", -500, 500);
-//
-//        addAnimation("TREE-CHESTNUT", 10,0);
-//
-//        world.getChildren().addAll(humanXfrom);
-
         /*
-            DELAY !
+            Make DELAY !
          */
 
 //        Task<Void> sleeper = new Task<Void>() {
@@ -153,6 +152,10 @@ public class Game  {
 
     public void render(Stage primaryStage) {
 
+        // GAME MUSIC
+
+        startMusic();
+
         // Game Scene
 
         SubScene subScene = new SubScene(world, 1920, 900);
@@ -162,109 +165,138 @@ public class Game  {
 
         // Game Menu
 
-        Group concstructionMenu = new Group();
-        createRect(concstructionMenu, 1920,282, 0, 1080-282, "GAME-MENU");
+        gameMenu = new GameMenu(GameMenu.MODES.MAIN);
+
+        //        Group constructionMenu = new Group();
+        //        Group buildingBtn = new Group();
+        //        Group farmButton = new Group();
+        //        Group barracksButton = new Group();
+        //        Group workshopButton = new Group();
+        //
+        //        createRect(constructionMenu, 1925,282, -3, 801, "GAME-MENU");
+        //        createRect(farmButton, 170, 150, 500, 930, "BUILDING-FARM");
+        //        createRect(barracksButton, 250, 160, 680, 920, "BUILDING-BARRACKS");
+        //        createRect(workshopButton, 91, 84, 930, 940, "BUILDING-WORKSHOP");
+        //
+        //        buildingBtn.getChildren().add(farmButton);
+        //        buildingBtn.getChildren().add(barracksButton);
+        //        buildingBtn.getChildren().add(workshopButton);
+        //
+        //        System.out.println(constructionMenu.getChildren());
+        //
+        //        buildingBtn.getChildren().get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, new GameController("FARM"));
+        //        buildingBtn.getChildren().get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, new GameController("BARRACKS"));
+        //        buildingBtn.getChildren().get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, new GameController("WORKSHOP"));
+        //
+        //        constructionMenu.getChildren().add(buildingBtn);
 
 
         // Adding to Root Group
 
         root.getChildren().add(subScene);
-        root.getChildren().add(concstructionMenu);
+        root.getChildren().add(gameMenu.menuPage);
 
 
         // Create Scene with group Root
 
-        Scene gameMenu = new Scene(root, 1280, 182);
+        Scene gameMenuScene = new Scene(root, 1280, 182);
 
 
-        // Controller
+        // GameController
 
-        handleMouse(gameMenu, world);
+        handleMouse(gameMenuScene, world);
 
 
         // Scene Setting and Stage
 
         primaryStage.setTitle("Game");
-        primaryStage.setScene(gameMenu);
 
+        primaryStage.setScene(gameMenuScene);
+        primaryStage.setFullScreen(true);
+        primaryStage.show();
 
         // Initial Builds
 
-        buildCamera();
         buildEarth();
 
 
-        // Testing Objects And Animations
+        //        buildAxes();
+
+        buildCamera();
 
 
-        addBuilding("WORKSHOP", 0, 100);
-        addBuilding("BARRACKS", 0, 300);
-        addBuilding("FARM", 750, 0);
-        addBuilding("CASTLE", -500, 0);
-        addHuman("VASSAL-DOWN", -300, 0);
+        /*
+         Testing Objects And Animations
+          */
+
+        // Human
+
+        double specificAngle = (Math.PI*2)/10;
+        for (int i = 10; i > -1; i--) {
+
+            addHuman("VASSAL-DOWN", (int) (-550 + 50 * Math.cos(specificAngle * i)), (int) (100 + 50 * Math.sin(specificAngle * i)));
+
+        }
+
         addHuman("SWORDSMAN-DOWN", 600, 600);
         addHuman("SWORDSMAN-DOWN", -500, 500);
 
-        addAnimation("TREE-CHESTNUT", 10,0);
+
+        // Building
+
+//        buildBuilding("WORKSHOP", 0, 100);
+//        buildBuilding("WORKSHOP", 0, -100);
+//        buildBuilding("WORKSHOP", 100, 0);
+//        buildBuilding("WORKSHOP", -100, 0);
+//        buildBuilding("WORKSHOP", -100, -100);
+//        buildBuilding("WORKSHOP", -100, 100);
+//        buildBuilding("WORKSHOP", 100, -100);
+//        buildBuilding("WORKSHOP", 100, 100);
+//        buildBuilding("WORKSHOP", 600, 600);
+        buildBuilding("WORKSHOP", 0, 500);
+        buildBuilding("BARRACKS", 0, 300);
+        buildBuilding("FARM", 750, 0);
+        buildBuilding("CASTLE", -375, 75);
+
+
+        // Animation
+
+        addAnimation("TREE-CHESTNUT", 300,200);
+        addAnimation("TREE-CHESTNUT", 1000,250);
+        addAnimation("TREE-CHESTNUT", 1500,1200);
+        addAnimation("TREE-CHESTNUT", 300,200);
+        addAnimation("TREE-CHESTNUT", -1650,400);
+        addAnimation("TREE-CHESTNUT", -1150,900);
+        addAnimation("TREE-CHESTNUT", 490,75);
+        addAnimation("TREE-CHESTNUT", -450,0);
+        addAnimation("TREE-CHESTNUT", -900,651);
+        addAnimation("TREE-CHESTNUT", -1050,-350);
+        addAnimation("TREE-OAK",500, 500);
+        addAnimation("TREE-OAK",1400, 500);
+        addAnimation("TREE-OAK",-900, -1300);
+        addAnimation("TREE-OAK",1200, -1200);
+        addAnimation("TREE-OAK",-1450, 1225);
+        addAnimation("TREE-PINE",-500, -1000);
+        addAnimation("TREE-PINE",1060, -800);
+        addAnimation("TREE-PINE",1060, -800);
+        addAnimation("TREE-PINE",1010, -650);
+        addAnimation("TREE-PINE",600, 400);
+
         startObjectAnimation();
 
+
+        // Add Human
 
         world.getChildren().addAll(humanXfrom);
 
 
-//        Task<Void> sleeper = new Task<Void>() {
-//            @Override
-//            protected Void call() throws Exception {
-//                try {
-//                    Thread.sleep(5000);
-//                } catch (InterruptedException e) {}
-//                return null;
-//            }
-//        };
-//        sleeper.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-//            @Override
-//            public void handle(WorkerStateEvent event) {
-//                removeBuilding(myBuildings.get("CASTLE").get(0));
-//            }
-//        });
-//        new Thread(sleeper).start();
-//        myBuildings.put("CASTLE", null);
-//        System.out.println(world.getChildren());
-
-
-
-        primaryStage.show();
+        startResourceReduction();
+        System.out.println(myBuildings);
 
     }
 
 
-    public void startObjectAnimation() {
-
-        long initialNanoTime = System.nanoTime();
-
-        new AnimationTimer() {
-
-            @Override
-            public void handle(long now) {
-
-                earthObjects.getChildren().clear();
-
-                int animationCycle = (int) (((now-initialNanoTime)/100000000));
-
-                for (GameAnimation anime : gameObjectAnimations) {
-
-                    earthObjects.getChildren().add(anime.buildFrame(animationCycle));
-
-                }
-
-            }
-
-        }.start();
-
-        earthObjects.setRotateY(-45);
-        earthGroup.getChildren().add(earthObjects);
-
-    }
+    // Builds
 
 
     private void buildCamera() {
@@ -323,6 +355,8 @@ public class Game  {
 
     }
 
+    // Add Object
+
     public void addHuman(String humanName, int x, int y) {
 
 
@@ -342,35 +376,19 @@ public class Game  {
                 break;
         }
 
-        humanXfrom.setRotateY(-45);
     }
 
-    public void addAnimation(String animationName, int x, int y) {
-
-        switch (animationName) {
-
-            case "TREE-CHESTNUT":
-                Chestnut newChestnut = new Chestnut(new int[] {x, y});
-                gameObjectAnimations.add(newChestnut);
-                break;
-            default:
-                break;
-
-        }
-
-    }
-
-
-    public void addBuilding(String buildingName, int x, int y) {
+    public void buildBuilding(String buildingName, int x, int y) {
 
         switch (buildingName) {
             case "CASTLE":
                 if (!haveCastle) {
                     Castle newCastle = new Castle(new int[]{x, y}, "Amin");
-                    newCastle.xform.setRotateY(-45);
                     newCastle.xform.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
 
-                        System.out.println("Castle Has Been Selected !");
+                        //                        System.out.println("Castle Has Been Selected !");
+                        //System.out.println(newCastle.xform.getChildren().get(0).getTranslateX() + " " + newCastle.xform.getChildren().get(0).getTranslateY() + " " + newCastle.xform.getChildren().get(0).getTranslateZ());
+                        gameMenu.changeMode(GameMenu.MODES.CASTLE);
 
                     });
                     world.getChildren().addAll(newCastle.xform);
@@ -382,7 +400,12 @@ public class Game  {
                 break;
             case "FARM":
                 Farm newFarm = new Farm(new int[]{x, y}, "Amin");
-                newFarm.xform.setRotateY(-45);
+
+                newFarm.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                    gameMenu.changeMode(GameMenu.MODES.FARM);
+
+                });
                 world.getChildren().addAll(newFarm.xform);
                 ArrayList<Building> farmList = new ArrayList<>();
                 if (myBuildings.get("FARM") == null) {
@@ -400,7 +423,12 @@ public class Game  {
                 break;
             case "WORKSHOP":
                 Workshop newWorkshop = new Workshop(new int[]{x, y}, "Amin");
-                newWorkshop.xform.setRotateY(-45);
+
+                newWorkshop.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                    gameMenu.changeMode(GameMenu.MODES.WORKSHOP);
+
+                });
                 world.getChildren().addAll(newWorkshop.xform);
                 ArrayList<Building> workshopList = new ArrayList<>();
                 if (myBuildings.get("WORKSHOP") == null) {
@@ -420,7 +448,12 @@ public class Game  {
                 if (myBuildings.get("BARRACKS") == null) {
 
                     Barracks newBarracks = new Barracks(new int[]{x, y}, "Amin");
-                    newBarracks.xform.setRotateY(-45);
+
+                    newBarracks.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                        gameMenu.changeMode(GameMenu.MODES.BARRACKS);
+
+                    });
                     world.getChildren().addAll(newBarracks.xform);
                     ArrayList<Building> barracksList = new ArrayList<>();
                     barracksList.add(newBarracks);
@@ -484,7 +517,6 @@ public class Game  {
 
     public static void createRect(Group group, double width, double height, double x, double y, String imageName) {
 
-
         VBox vBoxItem = new VBox();
 
         vBoxItem.setTranslateX(x);
@@ -502,10 +534,99 @@ public class Game  {
     }
 
 
+    public void addAnimation(String animationName, int x, int y) {
+
+        switch (animationName) {
+
+            case "TREE-CHESTNUT":
+
+                Chestnut newChestnut = new Chestnut(new int[] {x, y});
+                gameObjectAnimations.add(newChestnut);
+                break;
+            default:
+                break;
+
+            case "TREE-OAK":
+
+                Oak newOak = new Oak(new int[] {x, y});
+                gameObjectAnimations.add(newOak);
+                break;
+
+            case "TREE-PINE":
+
+                Pine newPine = new Pine (new int[] {x, y});
+                gameObjectAnimations.add(newPine);
+                break;
+        }
+    }
+
+    public void startMusic() {
+//        AudioClip theMenuMusic = ResourceManager.getSound("GAME-MAIN-MUSIC1");
+//        theMenuMusic.play();
+    }
+
+    public void startObjectAnimation() {
+        long initialNanoTime = System.nanoTime();
+        new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                earthObjects.getChildren().clear();
+                int animationCycle = (int) (((now-initialNanoTime)/100000000));
+                for (GameAnimation anime : gameObjectAnimations) {
+                    earthObjects.getChildren().add(anime.buildFrame(animationCycle));
+                }
+            }
+        }.start();
+        earthGroup.getChildren().add(earthObjects);
+    }
+    public void startResourceReduction() {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                while (true) {
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    // Calculate Resource Rate
+                    Map jsonMap = ResourceManager.getJson("JSON-GAME");
+                    resourceRate = (Map) jsonMap.get("initial_resource_rate");
+                    int foodRate = Integer.parseInt(resourceRate.get("food").toString());
+                    int woodRate = Integer.parseInt(resourceRate.get("wood").toString());
+                    int goldRate = Integer.parseInt(resourceRate.get("gold").toString());
+                    for (ArrayList<Building> arr : myBuildings.values()) {
+                        for (Building building : arr) {
+                            foodRate += building.resourceRate.get("food");
+                            woodRate += building.resourceRate.get("wood");
+                            goldRate += building.resourceRate.get("gold");
+                        }
+                    }
+                    // Get and Set new Resource Value
+                    int food = Integer.parseInt(resources.get("food").toString()) + foodRate;
+                    int wood = Integer.parseInt(resources.get("wood").toString()) + woodRate;
+                    int gold = Integer.parseInt(resources.get("gold").toString()) + goldRate;
+                    resources.put("food",food);
+                    resources.put("wood",wood);
+                    resources.put("gold",gold);
+                    // Update Text
+                    gameMenu.updateResource();
+                }
+            }
+        }.start();
+    }
+
+    // Mouse Handler
+
+
     private void handleMouse(Scene scene, final Node root) {
 
         /*
-
             drag-left:
                 screen
             drag-right:
@@ -516,75 +637,7 @@ public class Game  {
                 construct building
                 attack
                 move
-
          */
-
-//        scene.addEventFilter(MouseEvent.ANY, e -> {
-//
-//
-//            mousePosX = e.getSceneX();
-//            mousePosY = e.getSceneY();
-//
-//            buildCamera();
-//            if (mouseDeltaY < 0) CAMERA_INITIAL_DISTANCE += mouseDeltaY * 0.5;
-//            else CAMERA_INITIAL_DISTANCE += mouseDeltaY * 0.5;
-//
-//
-//            if (mousePosX > 0 && mousePosX < 160 && mousePosY > 110 && mousePosY< 910) {
-//
-//                cameraXform2.t.setX(cameraXform2.t.getX() + 40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//            } else if (mousePosX > 1600 && mousePosX < 1920 && mousePosY > 130 && mousePosY< 910) {
-//
-//                cameraXform2.t.setX(cameraXform2.t.getX() + -40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//
-//            } else if (mousePosX > 290 && mousePosX < 1600 && mousePosY > 0 && mousePosY< 130) {
-//
-//                CAMERA_INITIAL_DISTANCE += 40 * 0.5;
-//                cameraXform2.t.setY(cameraXform2.t.getY() + 40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//            } else if (mousePosX > 290 && mousePosX < 1600 && mousePosY > 910 && mousePosY< 1080) {
-//
-//                CAMERA_INITIAL_DISTANCE += -40 * 0.5;
-//                cameraXform2.t.setY(cameraXform2.t.getY() + -40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//            }
-//
-//        });
-
-//        scene.setOnMouseEntered(new EventHandler<MouseEvent>() {
-//
-//            @Override
-//            public void handle(MouseEvent me) {
-//
-//                mousePosX = me.getSceneX();
-//                mousePosY = me.getSceneY();
-//
-//                buildCamera();
-//
-//                if (mousePosX > 0 && mousePosX < 160 && mousePosY > 110 && mousePosY< 910) {
-//
-//                    cameraXform2.t.setX(cameraXform2.t.getX() + 40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//                } else if (mousePosX > 1600 && mousePosX < 1920 && mousePosY > 130 && mousePosY< 910) {
-//
-//                    cameraXform2.t.setX(cameraXform2.t.getX() + -40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//
-//                } else if (mousePosX > 290 && mousePosX < 1600 && mousePosY > 0 && mousePosY< 130) {
-//
-//                    cameraXform2.t.setY(cameraXform2.t.getY() + 40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//                } else if (mousePosX > 290 && mousePosX < 1600 && mousePosY > 910 && mousePosY< 1080) {
-//
-//                    cameraXform2.t.setY(cameraXform2.t.getY() + -40 * MOUSE_SPEED * TRACK_SPEED);
-//
-//                }
-//            }
-//
-//        });
-
 
         scene.setOnMousePressed(new EventHandler<MouseEvent>() {
 
@@ -593,13 +646,12 @@ public class Game  {
 
                 mousePosX = me.getSceneX();
                 mousePosY = me.getSceneY();
-//                System.out.println(mousePosX + " " + mousePosY);
-//                System.out.println();
 
             }
 
         });
 
+        // Moving Page
 
         scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
 
@@ -622,10 +674,6 @@ public class Game  {
                     cameraXform.rx.setAngle(cameraXform.rx.getAngle() + mouseDeltaY * 4);
 
                 } else if (me.isPrimaryButtonDown()) {
-//                if (me.isPrimaryButtonDown()) {
-
-//                    double oldXAngle = cameraXform.ry.getAngle();
-//                    double oldYAngle = cameraXform.rx.getAngle();
 
 
                     if (mouseDeltaY < 0) CAMERA_INITIAL_DISTANCE += mouseDeltaY * 0.5;
@@ -634,8 +682,6 @@ public class Game  {
                     buildCamera();
                     cameraXform2.t.setX(cameraXform2.t.getX() + mouseDeltaX * MOUSE_SPEED * TRACK_SPEED);
                     cameraXform2.t.setY(cameraXform2.t.getY() + mouseDeltaY * MOUSE_SPEED * TRACK_SPEED);
-//                    cameraXform.ry.setAngle(oldYAngle);
-//                    cameraXform.rx.setAngle(oldXAngle);
 
 
                 }
@@ -644,7 +690,51 @@ public class Game  {
 
         });
 
+        // Add Building
+
+        scene.addEventFilter(MouseEvent.ANY, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                double cameraSpecialDis = camera.getTranslateZ()+2000;
+                if (GameController.buildingFarmIsSelected) {
+                    double xPos = event.getX()*1.25-1600;
+                    double yPos = 1000;
+                    xPos += -550;
+                    yPos += event.getY()*1.5+300;
+                    xPos += 380;
+                    yPos += -950 - cameraSpecialDis*1.3;
+                    GameController.newFarm.xform.setTranslate(xPos, 0, yPos);
+                    if (event.isPrimaryButtonDown()) {
+                        GameController.buildingFarmIsSelected = false;
+                    }
+                }
+                if (GameController.buildingBarracksIsSelected) {
+                    double xPos = event.getX()*1.25-1600;
+                    double yPos = 1000;
+                    xPos += -550;
+                    yPos += event.getY()*1.5+300;
+                    xPos += 150;
+                    yPos += -950 - cameraSpecialDis*1.3;
+                    GameController.newBarracks.xform.setTranslate(xPos, 0, yPos);
+                    if (event.isPrimaryButtonDown()) GameController.buildingBarracksIsSelected = false;
+                }
+                if (GameController.buildingWorkshopIsSelected) {
+                    double xPos = event.getX()*1.25-1600;
+                    double yPos = 1000;
+                    xPos += -550;
+                    yPos += event.getY()*1.5+300;
+                    xPos += -20;
+                    yPos += -965 - cameraSpecialDis*1.3;
+                    GameController.newWorkshop.xform.setTranslate(xPos, 0, yPos);
+                    if (event.isPrimaryButtonDown()) GameController.buildingWorkshopIsSelected = false;
+                }
+            }
+        });
+
     }
+
+
+
 
     //Duck
     public String mapID () {

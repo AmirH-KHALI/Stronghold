@@ -27,6 +27,8 @@ public class GameGui extends Application {
 
     private Scanner in = new Scanner(System.in);
 
+    private Group guiRoot = new Group();
+
     private static VBox mainBox;
     private static VBox serverPageBox;
     private static VBox clientPageBox;
@@ -60,8 +62,8 @@ public class GameGui extends Application {
                     public void handle(MouseEvent event) {
 
                         gotoClientPage();
-
-                        //theMenuMusic.stop();
+                        //Game game = new Game("MAP-SAMPLE");
+                        //game.render(primaryStage);
 
                     }
                 });
@@ -72,8 +74,6 @@ public class GameGui extends Application {
                     public void handle(MouseEvent event) {
 
                         gotoServerPage();
-
-                        //theMenuMusic.stop();
 
                     }
                 });
@@ -197,6 +197,8 @@ public class GameGui extends Application {
                     public void handle(MouseEvent event) {
 
                         myServer.startGame();
+//                        Game game = new Game("MAP-SAMPLE");
+//                        game.render(primaryStage);
                     }
                 });
 
@@ -258,8 +260,7 @@ public class GameGui extends Application {
             @Override
             public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
 
-                if(newValue != null)
-                    primaryStage.setFullScreen(true);
+                if(newValue != null) primaryStage.setFullScreen(true);
             }
 
         });
