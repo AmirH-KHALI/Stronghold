@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import Stronghold.Network.Client;
+import Stronghold.Network.GameEvent;
+import Stronghold.Network.ServerPlayer;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.geometry.Point3D;
@@ -21,7 +24,6 @@ import javafx.scene.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.AudioClip;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -29,8 +31,6 @@ import javafx.stage.Stage;
 
 
 public class Game  {
-
-    private static String mapName;
 
     public static Map resources;
     private Map resourceRate;
@@ -45,6 +45,9 @@ public class Game  {
     //Duck
 
     public static ArrayList<ServerPlayer> players = new ArrayList<>();
+    private static String mapName;
+    private String playerName;
+    private Client client;
 
 
     // Main Objects
@@ -103,12 +106,12 @@ public class Game  {
     // Mouse Position on Earth
     public static double[] mousePosOnEarth;
 
-    Game(String mapName) {
+    public Game(Client client, String playerName, String mapName) {
 
-        // File Manager
-
-        ResourceManager.initialization();
-
+        this.playerName = playerName;
+        this.client = client;
+        GameController.owner = playerName;
+        GameController.client = client;
 
         // Map and First Resources
 
@@ -258,10 +261,10 @@ public class Game  {
 //        buildBuilding("WORKSHOP", 100, -100);
 //        buildBuilding("WORKSHOP", 100, 100);
 //        buildBuilding("WORKSHOP", 600, 600);
-        buildBuilding("WORKSHOP", 0, 500);
-        buildBuilding("BARRACKS", 0, 300);
-        buildBuilding("FARM", 750, 0);
-        buildBuilding("CASTLE", -375, 75);
+        buildBuilding("DEFAULT", "WORKSHOP", 0, 500);
+        buildBuilding("DEFAULT", "BARRACKS", 0, 300);
+        buildBuilding("DEFAULT", "FARM", 750, 0);
+        buildBuilding("DEFAULT", "CASTLE", -375, 75);
 
 
         // Animation
@@ -427,12 +430,32 @@ public class Game  {
 
     }
 
-    public void buildBuilding(String buildingName, int x, int y) {
+    public void buildBuilding(String playerName, String buildingName, int x, int y) {
 
         switch (buildingName) {
             case "CASTLE":
-                if (!haveCastle) {
-                    Castle newCastle = new Castle(new int[]{x, y}, "Amin");
+                if (playerName.equals(this.playerName)) {
+                    if (!haveCastle) {
+                        Castle newCastle = new Castle(new int[]{x, y}, playerName);
+                        newCastle.xform.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
+
+//                        System.out.println("Castle Has Been Selected !");
+//                        System.out.println(newCastle.xform.getChildren().get(0).getTranslateX() + " " + newCastle.xform.getChildren().get(0).getTranslateY() + " " + newCastle.xform.getChildren().get(0).getTranslateZ());
+                            gameMenu.changeMode(GameMenu.MODES.CASTLE);
+
+
+                        });
+                        world.getChildren().addAll(newCastle.xform);
+
+                        client.sendGameEvent(GameEvent.SOMETHING_CREATED, playerName + "@" + "CASTLE" + ":" + x + "," + y);
+
+                        haveCastle = true;
+                        ArrayList<Building> castleList = new ArrayList<>();
+                        castleList.add(newCastle);
+                        myBuildings.put("CASTLE", castleList);
+                    } else System.out.println("We have one castle !!");
+                } else {
+                    Castle newCastle = new Castle(new int[]{x, y}, playerName);
                     newCastle.xform.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
 
 //                        System.out.println("Castle Has Been Selected !");
@@ -442,61 +465,108 @@ public class Game  {
 
                     });
                     world.getChildren().addAll(newCastle.xform);
-                    haveCastle = true;
-                    ArrayList<Building> castleList = new ArrayList<>();
-                    castleList.add(newCastle);
-                    myBuildings.put("CASTLE", castleList);
-                } else System.out.println("We have one castle !!");
+                }
                 break;
             case "FARM":
-                Farm newFarm = new Farm(new int[]{x, y}, "Amin");
+                if (playerName.equals(this.playerName)) {
+                    Farm newFarm = new Farm(new int[]{x, y}, playerName);
 
-                newFarm.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+                    newFarm.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
-                    gameMenu.changeMode(GameMenu.MODES.FARM);
+                        gameMenu.changeMode(GameMenu.MODES.FARM);
 
-                });
-                world.getChildren().addAll(newFarm.xform);
-                ArrayList<Building> farmList = new ArrayList<>();
-                if (myBuildings.get("FARM") == null) {
+                    });
+                    world.getChildren().addAll(newFarm.xform);
 
-                    farmList.add(newFarm);
-                    myBuildings.put("FARM", farmList);
+                    client.sendGameEvent(GameEvent.SOMETHING_CREATED, playerName + "@" + "FARM" + ":" + x + "," + y);
 
+                    ArrayList<Building> farmList = new ArrayList<>();
+                    if (myBuildings.get("FARM") == null) {
+
+                        farmList.add(newFarm);
+                        myBuildings.put("FARM", farmList);
+
+                    } else {
+
+                        farmList = myBuildings.get("FARM");
+                        farmList.add(newFarm);
+                        myBuildings.put("FARM", farmList);
+
+                    }
                 } else {
 
-                    farmList = myBuildings.get("FARM");
-                    farmList.add(newFarm);
-                    myBuildings.put("FARM", farmList);
+                    Farm newFarm = new Farm(new int[]{x, y}, playerName);
+
+                    newFarm.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                        gameMenu.changeMode(GameMenu.MODES.FARM);
+
+                    });
+
+                    world.getChildren().addAll(newFarm.xform);
 
                 }
                 break;
             case "WORKSHOP":
-                Workshop newWorkshop = new Workshop(new int[]{x, y}, "Amin");
-                newWorkshop.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+                if (playerName.equals(this.playerName)) {
+                    Workshop newWorkshop = new Workshop(new int[]{x, y}, playerName);
+                    newWorkshop.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
-                    gameMenu.changeMode(GameMenu.MODES.WORKSHOP);
+                        gameMenu.changeMode(GameMenu.MODES.WORKSHOP);
 
-                });
-                world.getChildren().addAll(newWorkshop.xform);
-                ArrayList<Building> workshopList = new ArrayList<>();
-                if (myBuildings.get("WORKSHOP") == null) {
+                    });
+                    world.getChildren().addAll(newWorkshop.xform);
 
-                    workshopList.add(newWorkshop);
-                    myBuildings.put("WORKSHOP", workshopList);
+                    client.sendGameEvent(GameEvent.SOMETHING_CREATED, playerName + "@" + "WORKSHOP" + ":" + x + "," + y);
 
+                    ArrayList<Building> workshopList = new ArrayList<>();
+                    if (myBuildings.get("WORKSHOP") == null) {
+
+                        workshopList.add(newWorkshop);
+                        myBuildings.put("WORKSHOP", workshopList);
+
+                    } else {
+
+                        workshopList = myBuildings.get("WORKSHOP");
+                        workshopList.add(newWorkshop);
+                        myBuildings.put("WORKSHOP", workshopList);
+
+                    }
                 } else {
 
-                    workshopList = myBuildings.get("WORKSHOP");
-                    workshopList.add(newWorkshop);
-                    myBuildings.put("WORKSHOP", workshopList);
+                    Workshop newWorkshop = new Workshop(new int[]{x, y}, playerName);
+                    newWorkshop.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
+                        gameMenu.changeMode(GameMenu.MODES.WORKSHOP);
+
+                    });
+                    world.getChildren().addAll(newWorkshop.xform);
                 }
                 break;
             case "BARRACKS":
-                if (myBuildings.get("BARRACKS") == null) {
+                if (playerName.equals(this.playerName)) {
+                    if (myBuildings.get("BARRACKS") == null) {
 
-                    Barracks newBarracks = new Barracks(new int[]{x, y}, "Amin");
+                        Barracks newBarracks = new Barracks(new int[]{x, y}, playerName);
+
+                        newBarracks.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+                            gameMenu.changeMode(GameMenu.MODES.BARRACKS);
+
+                        });
+                        world.getChildren().addAll(newBarracks.xform);
+
+                        client.sendGameEvent(GameEvent.SOMETHING_CREATED, playerName + "@" + "BARRACKS" + ":" + x + "," + y);
+
+                        ArrayList<Building> barracksList = new ArrayList<>();
+                        barracksList.add(newBarracks);
+                        myBuildings.put("BARRACKS", barracksList);
+                        break;
+
+                    } else System.out.println("We have one barracks");
+                } else {
+
+                    Barracks newBarracks = new Barracks(new int[]{x, y}, playerName);
 
                     newBarracks.xform.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
@@ -504,12 +574,7 @@ public class Game  {
 
                     });
                     world.getChildren().addAll(newBarracks.xform);
-                    ArrayList<Building> barracksList = new ArrayList<>();
-                    barracksList.add(newBarracks);
-                    myBuildings.put("BARRACKS", barracksList);
-                    break;
-
-                } else System.out.println("We have one barracks");
+                }
             default:
                 break;
         }

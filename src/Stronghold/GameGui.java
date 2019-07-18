@@ -2,7 +2,9 @@ package Stronghold;
 
 import Stronghold.Gui.Buttons.MainMenuButton;
 import Stronghold.Gui.Buttons.MainMenuTextField;
-import javafx.animation.AnimationTimer;
+import Stronghold.Network.Client;
+import Stronghold.Network.GameEvent;
+import Stronghold.Network.Server;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -12,10 +14,8 @@ import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.*;
-import javafx.scene.media.AudioClip;
 import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 
@@ -60,9 +60,9 @@ public class GameGui extends Application {
                     @Override
                     public void handle(MouseEvent event) {
 
-                        //gotoClientPage();
-                        Game game = new Game("MAP-SAMPLE");
-                        game.render(primaryStage);
+                        gotoClientPage();
+                        //Game game = new Game("MAP-SAMPLE");
+                        //game.render(primaryStage);
 
                     }
                 });

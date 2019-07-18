@@ -1,4 +1,4 @@
-package Stronghold;
+package Stronghold.Network;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,10 +16,13 @@ public class GameEvent {
 
     //server events
     public static final int JOIN_TO_GAME = 1;
-    public static final int START_GAME = 3;
+    public static final int SOMETHING_CREATED = 4;
+
 
     //client events
     public static final int USER_JOINED_TO_NETWORK = 2;
+    public static final int START_GAME = 3;
+    public static final int DISPLAY_BUILDING = 5;
 
 
 

@@ -1,12 +1,12 @@
-package Stronghold;
+package Stronghold.Network;
 
+import Stronghold.Game;
+import Stronghold.GameObjects.Building.Barracks;
+import Stronghold.GameObjects.Building.Building;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.Scanner;
 
 public class Server implements Runnable {
 
@@ -109,6 +109,14 @@ public class Server implements Runnable {
                 //Send join alert for all clients
                 GameEvent joinGameEvent = new GameEvent(GameEvent.USER_JOINED_TO_NETWORK, username);
                 sendPacketForAll(joinGameEvent.getJSON());
+                break;
+            }
+            case GameEvent.SOMETHING_CREATED: {
+                GameEvent displayBuilding = new GameEvent(GameEvent.DISPLAY_BUILDING, gameEvent.message);
+                for (ServerPlayer player : Game.players) {
+                    if (!player.playerName.equals(gameEvent.message.substring(0, gameEvent.message.indexOf("@"))))
+                        sendPacket(displayBuilding.getJSON(), player.address, player.port);
+                }
                 break;
             }
         }

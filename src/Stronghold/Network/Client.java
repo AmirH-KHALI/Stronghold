@@ -1,21 +1,15 @@
-package Stronghold;
+package Stronghold.Network;
 
 
-import Stronghold.Map.GameMap;
+import Stronghold.*;
+import Stronghold.GameObjects.Building.Barracks;
 import javafx.animation.AnimationTimer;
 import javafx.stage.Stage;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Client implements Runnable {
 
@@ -119,12 +113,12 @@ public class Client implements Runnable {
                 break;
             }
             case GameEvent.START_GAME: {
-
-                new AnimationTimer() {
+                Client client = this;
+                AnimationTimer x = new AnimationTimer() {
 
                     @Override
                     public void handle(long now) {
-                        game = new Game(gameEvent.message);
+                        game = new Game(client, usrName, gameEvent.message);
                         try {
                             game.render(stage);
 
@@ -133,7 +127,27 @@ public class Client implements Runnable {
                         }
                     }
 
-                }.start();
+                };
+                x.start();
+                //x.stop();
+                break;
+            }
+            case GameEvent.DISPLAY_BUILDING: {
+                //System.out.println(">>>>>>>>>>>>>>>>>>>> catch by client");
+                AnimationTimer x = new AnimationTimer() {
+
+                    @Override
+                    public void handle(long now) {
+                        int[] location = new int[2];
+                        String name = gameEvent.message.substring(0, gameEvent.message.indexOf("@"));
+                        String buildingName = gameEvent.message.substring(gameEvent.message.indexOf("@") + 1, gameEvent.message.indexOf(":"));
+                        location[0] = Integer.parseInt(gameEvent.message.substring(gameEvent.message.indexOf(":") + 1, gameEvent.message.indexOf(",")));
+                        location[1] = Integer.parseInt(gameEvent.message.substring(gameEvent.message.indexOf(",") + 1));
+                        game.buildBuilding(name, buildingName, location[0], location[1]);
+                    }
+
+                };
+                x.start();
                 break;
             }
         }
