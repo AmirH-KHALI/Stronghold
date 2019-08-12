@@ -860,6 +860,8 @@ public class Game  {
                 mousePosX = me.getSceneX();
                 mousePosY = me.getSceneY();
 
+                buildBuilding(playerName, "FARM", 0, 0);
+
             }
 
         });
